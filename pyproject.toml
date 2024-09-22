@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "kaggle-eeg-dataset"
+version = "0.1.0"
+description = ""
+authors = ["Vijay Selvaraj <vijay.selvaraj@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pywavelets = "^1.7.0"
+pandas = "^2.2.3"
+numpy = "^2.1.1"
+scipy = "^1.14.1"
+scikit-learn = "^1.5.2"
+matplotlib = "^3.9.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
