@@ -5,27 +5,25 @@ from eeg.classifier import EEGClassifier
 
 from sklearn.model_selection import train_test_split
 import pandas as pd
-
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
 def determine_state(row):
-    alpha_band_power = row['mean_alpha']
-    beta_band_power = row['mean_beta']
+    # Extract the alpha and beta power features
+    alpha_band_power = row['alpha_power']
+    beta_band_power = row['beta_power']
 
-    # Adjust these thresholds based on your data
-    if alpha_band_power > beta_band_power * 1.2:  # Example threshold
+    # Adjust thresholds based on data exploration
+    if alpha_band_power > beta_band_power * 1.2:  # Higher alpha power implies 'Calm'
         return 0  # Calm
-    elif beta_band_power > alpha_band_power * 1.2:  # Example threshold
+    elif beta_band_power > alpha_band_power * 1.2:  # Higher beta power implies 'Stressed'
         return 1  # Stressed
     else:
         return 2  # Focused
 
-
 def main():
-    logging.info(f"Starting EEG Classification Pipeline")
+    logging.info("Starting EEG Classification Pipeline")
 
     # Configuration
     data_dir = 'data'
@@ -45,12 +43,9 @@ def main():
     # Preprocessing
     preprocessor = EEGPreprocessor(fs)
 
-    # Apply filtering to train set
+    # Apply filtering to train and test sets
     for column in column_names:
         X_train[column + '_filtered'] = preprocessor.apply_filter(X_train, column, lowcut, highcut)
-
-    # Apply filtering to test set
-    for column in column_names:
         X_test[column + '_filtered'] = preprocessor.apply_filter(X_test, column, lowcut, highcut)
 
     # Feature Extraction
@@ -58,15 +53,15 @@ def main():
     train_features = feature_extractor.extract_features_from_data(X_train[[col + '_filtered' for col in column_names]])
     test_features = feature_extractor.extract_features_from_data(X_test[[col + '_filtered' for col in column_names]])
 
-    # Create Target Labels using the training set only
+    # Create Target Labels using the training set features
     train_features['target_label'] = train_features.apply(determine_state, axis=1)
     test_features['target_label'] = test_features.apply(determine_state, axis=1)
 
-    # Extract the target label
+    # Extract target labels
     y_train = train_features['target_label']
     y_test = test_features['target_label']
 
-    # Drop the target label from feature DataFrames
+    # Remove the target label from the feature sets
     X_train = train_features.drop(columns=['target_label'])
     X_test = test_features.drop(columns=['target_label'])
 
@@ -78,16 +73,13 @@ def main():
     print(">>> Training label distribution:\n", y_train.value_counts())
     print(">>> Test label distribution:\n", y_test.value_counts())
 
-
-
     # Model Training and Evaluation
     classifier = EEGClassifier()
     classifier.train(X_train, y_train)
     y_pred = classifier.predict(X_test)
     classifier.evaluate(y_test, y_pred)
 
-    logging.info(f"EEG Classification Pipeline Completed")
-
+    logging.info("EEG Classification Pipeline Completed")
 
 if __name__ == "__main__":
     main()
