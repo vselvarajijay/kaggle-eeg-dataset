@@ -19,21 +19,26 @@ class EEGFeatureExtractor:
 
         features = {}
 
+
+        """
         # 1. Time-Domain Features
         features['mean'] = np.mean(eeg_signal)
         features['std'] = np.std(eeg_signal)
         features['skew'] = skew(eeg_signal)
         features['kurtosis'] = kurtosis(eeg_signal)
         features['rms'] = np.sqrt(np.mean(eeg_signal**2))
+        """
 
         # 2. Frequency-Domain Features
         freqs = np.fft.fftfreq(len(eeg_signal), d=1 / self.fs)
         psd = np.abs(np.fft.fft(eeg_signal))**2
 
+
         # Only consider positive frequencies
         positive_freqs = freqs > 0
         freqs = freqs[positive_freqs]
         psd = psd[positive_freqs]
+
 
         # Extract band power for Delta (0.5-4 Hz), Theta (4-8 Hz), Alpha (8-12 Hz), Beta (12-30 Hz), and Gamma (>30 Hz)
         features['delta_power'] = np.mean(psd[(freqs >= 0.5) & (freqs < 4)])
@@ -47,12 +52,14 @@ class EEGFeatureExtractor:
         features['dominant_frequency'] = freqs[dominant_freq_index]
 
         # 4. Time-Frequency Domain Features (Wavelet Transform using 'db4' wavelet)
+        """
         coeffs = pywt.wavedec(eeg_signal, 'db4', level=5)
         for i, coeff in enumerate(coeffs):
             features[f'wavelet_mean_{i}'] = np.mean(coeff)
             features[f'wavelet_std_{i}'] = np.std(coeff)
             features[f'wavelet_skew_{i}'] = skew(coeff)
             features[f'wavelet_kurtosis_{i}'] = kurtosis(coeff)
+        """
 
         return features
 

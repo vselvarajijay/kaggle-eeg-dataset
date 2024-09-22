@@ -9,26 +9,23 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 def determine_state(row):
-    # Extract frequency domain power features
-    delta_power = row['delta_power']
-    theta_power = row['theta_power']
-    alpha_power = row['alpha_power']
     beta_power = row['beta_power']
     gamma_power = row['gamma_power']
+    dominant_frequency = row['dominant_frequency']
 
-    # Simple thresholds based on power band dominance
-    if alpha_power > beta_power and alpha_power > theta_power and alpha_power > gamma_power:
-        return 0  # Calm
-    elif beta_power > alpha_power and beta_power > theta_power and beta_power > gamma_power:
+    # Check for missing data; assign a default class if there's insufficient information
+    if pd.isna(beta_power) and pd.isna(gamma_power):
+        return 1  # Default to "Focused" if all relevant features are missing
+
+    # Classification based on available beta and gamma power
+    if beta_power > gamma_power and beta_power > 1.0:  # Threshold example
         return 1  # Focused
-    elif theta_power > alpha_power and theta_power > beta_power and theta_power > gamma_power:
+    elif gamma_power > beta_power and gamma_power > 1.0:
         return 2  # Stressed
-    elif gamma_power > alpha_power and gamma_power > beta_power and gamma_power > theta_power:
-        return 2  # Stressed (Gamma-dominant stress)
-
-    # Default to a focused state if there's no clear dominance
-    return 1  # Focused
+    else:
+        return 0  # Calm if neither is dominant
 
 
 def main():
