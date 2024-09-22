@@ -10,7 +10,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 class EEGClassifier:
     def __init__(self):
-        self.model = RandomForestClassifier(n_estimators=100, random_state=42)
+        self.model = RandomForestClassifier(n_estimators=10, max_depth=5, random_state=42, class_weight='balanced')
+
 
     def train(self, X_train, y_train):
         logging.info("Training the classifier")

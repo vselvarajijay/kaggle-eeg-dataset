@@ -8,6 +8,8 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
+
 class EEGFeatureExtractor:
     def __init__(self, fs):
         self.fs = fs
@@ -24,6 +26,13 @@ class EEGFeatureExtractor:
         freqs = np.fft.fftfreq(len(eeg_signal), d=1 / self.fs)
         psd = np.abs(np.fft.fft(eeg_signal))**2
 
+        # Extract the power for Alpha (8-12 Hz) and Beta (12-30 Hz) bands
+        alpha_band_power = np.mean(psd[(freqs >= 8) & (freqs <= 12)])
+        beta_band_power = np.mean(psd[(freqs >= 12) & (freqs <= 30)])
+        features['mean_alpha'] = alpha_band_power
+        features['mean_beta'] = beta_band_power
+
+        # General PSD statistics
         features['mean_psd'] = np.mean(psd)
         features['std_psd'] = np.std(psd)
 
